@@ -1,28 +1,30 @@
-import { MarkdownView, Plugin } from "obsidian";
+import { MarkdownView, Plugin, Editor, EditorPosition } from "obsidian";
+import { exec } from "child_process";
+import { promisify } from "util";
+
+const execAsync = promisify(exec);
 
 export default class VimTogglePlugin extends Plugin {
 	async onload() {
 		this.registerEvent(
-			this.app.workspace.on("file-open", async () => {
+			// active-leaf-change event Updates the state
+			// when the user switches to a different editor window.
+			this.app.workspace.on("active-leaf-change", () => {
 				const view =
 					this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
-					const editor = (view as any).sourceMode?.cmEditor?.cm?.cm;
-					editor.on("vim-mode-change", () => {
-						console.log("Insert mode : ", this.isInsertMode());
-					});
+					console.log(
+						"normal mode on active-leaf-change",
+						this.isInsertMode()
+					);
 				}
 			})
 		);
 	}
 
-	isInsertMode() {
+	private isInsertMode() {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-		if (!view) return null;
-
-		const editor = view.editor;
-		const cm = (editor as any).cm;
-		const vimState = cm?.cm?.state?.vim;
-		return vimState.insertMode;
+		const cm = (view as any).sourceMode?.cmEditor?.cm?.cm;
+		return cm?.state?.vim?.insertMode;
 	}
 }
