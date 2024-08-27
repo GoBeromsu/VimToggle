@@ -36,4 +36,13 @@ export default class VimTogglePlugin extends Plugin {
 			return null;
 		}
 	}
+	async getInputMethod(imSelectPath: string): Promise<string | null> {
+		try {
+			const { stdout } = await execAsync(`${imSelectPath}`);
+			return stdout.trim();
+		} catch (error) {
+			console.error("Error getting current input method:", error);
+			return null;
+		}
+	}
 }
