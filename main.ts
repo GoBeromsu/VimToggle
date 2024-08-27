@@ -22,9 +22,18 @@ export default class VimTogglePlugin extends Plugin {
 		);
 	}
 
-	private isInsertMode() {
+	isInsertMode() {
 		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 		const cm = (view as any).sourceMode?.cmEditor?.cm?.cm;
 		return cm?.state?.vim?.insertMode;
+	}
+	async getImSelectPath(): Promise<string | null> {
+		try {
+			const { stdout } = await execAsync("which im-select");
+			return stdout.trim();
+		} catch (error) {
+			console.error("Error finding im-select:", error);
+			return null;
+		}
 	}
 }
