@@ -3,6 +3,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
+type Result<T, E> = { success: true; value: T } | { success: false; error: E };
 
 export default class VimTogglePlugin extends Plugin {
 	async onload() {
@@ -27,22 +28,28 @@ export default class VimTogglePlugin extends Plugin {
 		const cm = (view as any).sourceMode?.cmEditor?.cm?.cm;
 		return cm?.state?.vim?.insertMode;
 	}
-	async getImSelectPath(): Promise<string | null> {
+	async getImSelectPath(): Promise<Result<string, string>> {
 		try {
 			const { stdout } = await execAsync("which im-select");
-			return stdout.trim();
+			return { success: true, value: stdout.trim() };
 		} catch (error) {
-			console.error("Error finding im-select:", error);
-			return null;
+			return {
+				success: false,
+				error: `Error finding im-select: ${error.message}`,
+			};
 		}
 	}
-	async getInputMethod(imSelectPath: string): Promise<string | null> {
+	async getInputMethod(
+		imSelectPath: string
+	): Promise<Result<string, string>> {
 		try {
 			const { stdout } = await execAsync(`${imSelectPath}`);
-			return stdout.trim();
+			return { success: true, value: stdout.trim() };
 		} catch (error) {
-			console.error("Error getting current input method:", error);
-			return null;
+			return {
+				success: false,
+				error: `Error getting current input method: ${error.message}`,
+			};
 		}
 	}
 }
